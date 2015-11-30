@@ -42,7 +42,7 @@ Next, a 8 digits pin will be displayed, keep it nearby too.
 
 ### The script
 
-Edit the file `betaseries-to-trakt` and fill line 7 and 8 with your app client id and secret we previously saw. Close the file.
+Edit the file `betaseries-to-trakt` and fill lines [7 and 8](https://github.com/Tuxity/betaseries-to-trakt/blob/master/betaseries-to-trakt#L7#L8) with your app client id and secret we previously saw. Close the file.
 
 Launch the script like this:
 ```
