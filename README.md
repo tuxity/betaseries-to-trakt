@@ -33,11 +33,11 @@ You don't really care about the others fields.
 
 Next, go to [your api applications](https://trakt.tv/oauth/applications) and click on the one named `betaseries-to-trakt`
 
-You will need the `Client ID`, `Client Secret` and the `PIN URL` from that page.
+You will need the `Client ID` and the `Client Secret` from that page. Also copy the number in the URL who should look like `https://trakt.tv/oauth/applications/XXXXX`
 
-Open the address of `PIN URL` in a new tab. You have to authorize the application `betaseries-to-trakt` to access to your account by clicking `Authorize`.
+Then, open this URL [https://trakt.tv/pin/XXXXX](https://trakt.tv/pin/XXXXX) (replacing `XXXXX` by your application number) in a new tab. You have to authorize the application `betaseries-to-trakt` to access to your account by clicking `Authorize`.
 
-Next, a 8 digits pin will be displayed, keep it nearby too.
+Next, a 8 alphanumerics pin will be displayed, keep it nearby too.
 
 
 ### The script
@@ -49,7 +49,7 @@ Launch the script like this:
 ./betaseries-to-trakt "~/Downloads/Séries de Tuxity.csv"
 ```
 
-When asked type the 8 digits pin and press enter.
+When asked type the 8 alphanumerics pin and press enter.
 
 ET VOILA!
 
