@@ -33,13 +33,13 @@ You will need the `Client ID` and the `Client Secret` from that page.
 
 ### The script
 
-### With Docker
+#### With Docker
 ```
 docker pull tuxity/betaseries-to-trakt:latest
 docker run -d --env CLIENT_ID=theclientID --env CLIENT_SECRET=theclientseccret tuxity/betaseries-to-trakt:latest
 ```
 
-### Without Docker
+#### Without Docker
 
 You will need python3
 
