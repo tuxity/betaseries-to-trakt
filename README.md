@@ -45,7 +45,7 @@ You will need python3
 
 Launch the script like this:
 ```
-python3 betaseries-to-trakt.py "~/Downloads/Séries de Tuxity.csv" "~/Downloads/Films de Tuxity.csv"
+CLIENT_ID=theclientID CLIENT_SECRET=theclientseccret python3 betaseries-to-trakt.py "~/Downloads/Séries de Tuxity.csv" "~/Downloads/Films de Tuxity.csv"
 ```
 
 Follow the script instructions
