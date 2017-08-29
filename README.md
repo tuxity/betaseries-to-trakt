@@ -3,22 +3,18 @@ betaseries-to-trakt
 
 Import your [Betaseries](https://www.betaseries.com) account's TV shows informations into your [Trakt.tv](https://trakt.tv) account.
 
+[![](https://images.microbadger.com/badges/version/tuxity/betaseries-to-trakt.svg)](https://hub.docker.com/r/tuxity/betaseries-to-trakt/)
+![](https://images.microbadger.com/badges/image/tuxity/betaseries-to-trakt.svg)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://opensource.org/licenses/MIT)
-
-
-## Requirement
-
-- PHP 5.5
-- cURL
 
 
 ## Getting Started
 
 ### Betaseries
 
-Go to your [account advanced settings](https://www.betaseries.com/compte/avance), and at almost the end of the page click on `Exporter les séries →`.
+Go to your [account advanced settings](https://www.betaseries.com/compte/avance), and at almost the end of the page click on `Exporter les séries →` and `Exporter les films →`.
 
-Keep the downloaded file nearby.
+Keep the downloaded files nearby.
 
 ### Trakt.tv
 
@@ -33,23 +29,26 @@ You don't really care about the others fields.
 
 Next, go to [your api applications](https://trakt.tv/oauth/applications) and click on the one named `betaseries-to-trakt`
 
-You will need the `Client ID` and the `Client Secret` from that page. Also copy the number in the URL who should look like `https://trakt.tv/oauth/applications/XXXXX`
-
-Then, open this URL [https://trakt.tv/pin/XXXXX](https://trakt.tv/pin/XXXXX) (replacing `XXXXX` by your application number) in a new tab. You have to authorize the application `betaseries-to-trakt` to access to your account by clicking `Authorize`.
-
-Next, a 8 alphanumerics pin will be displayed, keep it nearby too.
-
+You will need the `Client ID` and the `Client Secret` from that page.
 
 ### The script
 
-Edit the file `betaseries-to-trakt` and fill lines [7 and 8](https://github.com/Tuxity/betaseries-to-trakt/blob/master/betaseries-to-trakt#L7#L8) with your app client id and secret we previously saw. Close the file.
+### With Docker
+```
+docker pull tuxity/betaseries-to-trakt:latest
+docker run -d --env CLIENT_ID=theclientID --env CLIENT_SECRET=theclientseccret tuxity/betaseries-to-trakt:latest
+```
+
+### Without Docker
+
+You will need python3
 
 Launch the script like this:
 ```
-./betaseries-to-trakt "~/Downloads/Séries de Tuxity.csv"
+python3 betaseries-to-trakt.py "~/Downloads/Séries de Tuxity.csv" "~/Downloads/Films de Tuxity.csv"
 ```
 
-When asked type the 8 alphanumerics pin and press enter.
+Follow the script instructions
 
 ET VOILA!
 
