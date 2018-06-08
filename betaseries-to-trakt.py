@@ -11,7 +11,8 @@ import requests
 
 trakt_api = 'https://api.trakt.tv'
 auth_get_token_route = '%s/oauth/token' % (trakt_api)
-sync_route = '%s/sync/history' % (trakt_api)
+sync_history_route = '%s/sync/history' % (trakt_api)
+sync_watchlist_route = '%s/sync/watchlist' % (trakt_api)
 
 
 session = requests.Session()
@@ -49,7 +50,7 @@ def login_to_trakt():
         'Authorization':     'Bearer ' + response["access_token"]
     })
 
-def create_show(obj):
+def create_show_history(obj):
     id = obj[1]
     name = obj[2]
     status_pct = obj[6]
@@ -86,7 +87,20 @@ def create_show(obj):
 
     return show
 
-def create_movie(obj):
+def create_show_watchlist(obj):
+    id = obj[1]
+    name = obj[2]
+
+    show = {
+        'name': name,
+        'ids': {
+            'tvdb': id
+        }
+    }
+
+    return show
+
+def create_movie_history(obj):
     id = obj[1]
     name = obj[2]
 
@@ -100,51 +114,125 @@ def create_movie(obj):
 
     return movie
 
+def create_movie_watchlist(obj):
+    id = obj[1]
+    name = obj[2]
+
+    movie = {
+        'name': name,
+        'ids': {
+            'tmdb': id
+        }
+    }
+
+    return movie
+
+
 def main():
     login_to_trakt()
 
-    post_data = {
+    post_history_data = {
+        'shows': [],
+        'movies': []
+    }
+
+    post_watchlist_data = {
         'shows': [],
         'movies': []
     }
 
     for file_path in sys.argv[1::]:
         file = open(file_path, "r")
-
         type = None
+
         for row in csv.reader(file):
             if row[1] == 'thetvdb_id':
                 type = 'show'
                 continue
+
             if row[1] == 'tmdb_id':
                 type = 'movie'
                 continue
 
             if type == 'show':
-                post_data['shows'].append(create_show(row))
+                status_pct = row[6]
+                if status_pct == '0':
+                    post_watchlist_data['shows'].append(create_show_watchlist(row))
+                else:
+                    post_history_data['shows'].append(create_show_history(row))
+
             if type == 'movie':
-                post_data['movies'].append(create_movie(row))
+                status = row[3] # '2' = je ne veux pas voir, '1' = j'ai vu, '0' = je veux voir
+                if status == '0':
+                    post_watchlist_data['movies'].append(create_movie_watchlist(row))
+                elif status == '1':
+                    post_history_data['movies'].append(create_movie_history(row))
 
 
         file.close()
 
-    request = session.post(sync_route, data=json.dumps(post_data))
-    response = request.json()
+    # Post 'history' data
+
+    request_history = session.post(sync_history_route, data=json.dumps(post_history_data))
+    response_history = request_history.json()
+
+    # Post 'watchlist' data
+
+    request_watchlist = session.post(sync_watchlist_route, data=json.dumps(post_watchlist_data))
+    response_watchlist = request_watchlist.json()
+
+    # Print summary
 
     print('\r\nMigration from Betaseries CSV files Done!')
-    print('Added:')
-    print('\t %s episodes' % response['added']['episodes'])
-    print('\t %s movies' % response['added']['movies'])
-    if len(response['not_found']['episodes']) or response['not_found']['movies']:
+
+    print('\r\n-----------------------------------------')
+    print('HISTORY')
+
+    print('\r\nAdded:')
+    # print('\t %s shows' % response_history['added']['shows'])
+    print('\t %s episodes' % response_history['added']['episodes'])
+    print('\t %s movies' % response_history['added']['movies'])
+
+    if response_history['not_found']['shows'] or response_history['not_found']['episodes'] or response_history['not_found']['movies']:
         print('Not found:')
 
-        if len(response['not_found']['episodes']):
-            print('\t episodes:')
-            print(response['not_found']['episodes'])
+        if len(response_history['not_found']['shows']):
+            print('\t shows:')
+            print(response_history['not_found']['shows'])
 
-        if len(response['not_found']['movies']):
+        if len(response_history['not_found']['episodes']):
+            print('\t episodes:')
+            print(response_history['not_found']['episodes'])
+
+        if len(response_history['not_found']['movies']):
             print('\t movies:')
-            print(response['not_found']['movies'])
+            print(response_history['not_found']['movies'])
+
+    print('\r\n-----------------------------------------')
+    print('WATCHLIST')
+
+    print('\r\nAdded:')
+    print('\t %s shows' % response_watchlist['added']['shows'])
+    print('\t %s movies' % response_watchlist['added']['movies'])
+
+    if response_watchlist['existing']['shows'] or response_watchlist['existing']['movies']:
+        print('Existing:')
+        if response_watchlist['existing']['shows']:
+            print('\t %s shows' % response_watchlist['existing']['shows'])
+
+        if response_watchlist['existing']['movies']:
+            print('\t %s movies (the play count was incremented)' % response_watchlist['existing']['movies'])
+
+    if response_watchlist['not_found']['shows'] or response_watchlist['not_found']['movies']:
+        print('Not found:')
+
+        if len(response_watchlist['not_found']['shows']):
+            print('\t shows:')
+            print(response_watchlist['not_found']['shows'])
+
+        if len(response_watchlist['not_found']['movies']):
+            print('\t movies:')
+            print(response_watchlist['not_found']['movies'])
 
 
 if __name__ == "__main__":
