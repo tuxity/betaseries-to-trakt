@@ -8,14 +8,25 @@ import re
 import json
 import requests
 
+bs_api = 'https://api.betaseries.com'
+bs_api_key = os.environ.get('BS_API_KEY')
+bs_movie_route = '%s/movies/movie' % (bs_api)
+bs_show_route = '%s/shows/display' % (bs_api)
 
 trakt_api = 'https://api.trakt.tv'
 auth_get_token_route = '%s/oauth/token' % (trakt_api)
 sync_history_route = '%s/sync/history' % (trakt_api)
 sync_watchlist_route = '%s/sync/watchlist' % (trakt_api)
 
-
+bs_session = requests.Session()
 session = requests.Session()
+
+bs_session.headers.update({
+    'Accept':     'application/json',
+    'User-Agent': 'Betaseries to Trakt',
+    'Connection': 'Keep-Alive',
+    'X-BetaSeries-Key' : bs_api_key
+})
 
 def login_to_trakt():
 
@@ -51,18 +62,21 @@ def login_to_trakt():
     })
 
 def create_show_history(obj):
-    id = obj[1]
-    name = obj[2]
-    status_pct = obj[6]
+    id = obj[0]
+    name = obj[1]
+    status_pct = obj[4]
 
-    output = re.search('S([0-9]+)E([0-9]+)', obj[4])
+    output = re.search('S([0-9]+)E([0-9]+)', obj[3])
     last_seen_season = output.group(1)
     last_seen_episode = output.group(2)
+
+    request = bs_session.get(bs_show_route + '?id=' + id)
+    response = request.json()
 
     show = {
         'name': name,
         'ids': {
-            'tvdb': id
+            'tvdb': response['show']['thetvdb_id']
         },
         'watched_at': 'released'
     }
@@ -88,26 +102,32 @@ def create_show_history(obj):
     return show
 
 def create_show_watchlist(obj):
-    id = obj[1]
-    name = obj[2]
+    id = obj[0]
+    name = obj[1]
+
+    request = bs_session.get(bs_show_route + '?id=' + id)
+    response = request.json()
 
     show = {
         'name': name,
         'ids': {
-            'tvdb': id
+            'tvdb': response['show']['thetvdb_id']
         }
     }
 
     return show
 
 def create_movie_history(obj):
-    id = obj[1]
-    name = obj[2]
+    id = obj[0]
+    name = obj[1]
+
+    request = bs_session.get(bs_movie_route + '?id=' + id)
+    response = request.json()
 
     movie = {
-        'name': name,
+        'title': name,
         'ids': {
-            'tmdb': id
+            'tmdb': response['movie']['imdb_id']
         },
         'watched_at': 'released'
     }
@@ -115,13 +135,16 @@ def create_movie_history(obj):
     return movie
 
 def create_movie_watchlist(obj):
-    id = obj[1]
-    name = obj[2]
+    id = obj[0]
+    name = obj[1]
+
+    request = bs_session.get(bs_movie_route + '?id=' + id)
+    response = request.json()
 
     movie = {
-        'name': name,
+        'title': name,
         'ids': {
-            'tmdb': id
+            'tmdb': response['movie']['imdb_id']
         }
     }
 
@@ -142,32 +165,31 @@ def main():
     }
 
     for file_path in sys.argv[1::]:
-        file = open(file_path, "r")
-        type = None
+        file = open(file_path, encoding="utf8")
+        file_name = os.path.basename(file_path)
+        if "series-" in file_name:
+            type = 'show'
+        else:
+            type = 'movie'
 
         for row in csv.reader(file):
-            if row[1] == 'thetvdb_id':
-                type = 'show'
-                continue
-
-            if row[1] == 'tmdb_id':
-                type = 'movie'
+            # we move to next line (first is header)
+            if row[0] == 'id':
                 continue
 
             if type == 'show':
-                status_pct = row[6]
+                status_pct = row[5]
                 if status_pct == '0':
                     post_watchlist_data['shows'].append(create_show_watchlist(row))
                 else:
                     post_history_data['shows'].append(create_show_history(row))
 
             if type == 'movie':
-                status = row[3] # '2' = je ne veux pas voir, '1' = j'ai vu, '0' = je veux voir
+                status = row[2] # '2' = je ne veux pas voir, '1' = j'ai vu, '0' = je veux voir
                 if status == '0':
                     post_watchlist_data['movies'].append(create_movie_watchlist(row))
                 elif status == '1':
                     post_history_data['movies'].append(create_movie_history(row))
-
 
         file.close()
 
@@ -178,8 +200,8 @@ def main():
 
     # Post 'watchlist' data
 
-    request_watchlist = session.post(sync_watchlist_route, data=json.dumps(post_watchlist_data))
-    response_watchlist = request_watchlist.json()
+    #request_watchlist = session.post(sync_watchlist_route, data=json.dumps(post_watchlist_data))
+    #response_watchlist = request_watchlist.json()
 
     # Print summary
 
