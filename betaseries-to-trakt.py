@@ -200,8 +200,8 @@ def main():
 
     # Post 'watchlist' data
 
-    #request_watchlist = session.post(sync_watchlist_route, data=json.dumps(post_watchlist_data))
-    #response_watchlist = request_watchlist.json()
+    request_watchlist = session.post(sync_watchlist_route, data=json.dumps(post_watchlist_data))
+    response_watchlist = request_watchlist.json()
 
     # Print summary
 
