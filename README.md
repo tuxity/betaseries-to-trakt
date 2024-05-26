@@ -16,6 +16,8 @@ Go to your [account advanced settings](https://www.betaseries.com/compte/avance)
 
 Keep the downloaded files nearby.
 
+Go to [Développer avec l'API'](https://www.betaseries.com/compte/api), create an app (personnal use), and grap your "Clé API"
+
 ### Trakt.tv
 
 Go [register a new api app]( https://trakt.tv/oauth/applications/new). And fill the form with theses informations:
@@ -36,7 +38,7 @@ You will need the `Client ID` and the `Client Secret` from that page.
 #### With Docker
 ```
 docker pull tuxity/betaseries-to-trakt:latest
-docker run -d --env CLIENT_ID=theclientID --env CLIENT_SECRET=theclientseccret tuxity/betaseries-to-trakt:latest
+docker run -d --env BS_API_KEY=betaSeriesAPIKey CLIENT_ID=theclientID --env CLIENT_SECRET=theclientseccret tuxity/betaseries-to-trakt:latest
 ```
 
 #### Without Docker
@@ -45,7 +47,14 @@ You will need python3
 
 Launch the script like this:
 ```
-CLIENT_ID=theclientID CLIENT_SECRET=theclientseccret python3 betaseries-to-trakt.py "~/Downloads/Séries de Tuxity.csv" "~/Downloads/Films de Tuxity.csv"
+BS_API_KEY=betaSeriesAPIKey CLIENT_ID=theclientID CLIENT_SECRET=theclientseccret python3 betaseries-to-trakt.py "~/Downloads/series-tuxity.csv" "~/Downloads/films-tuxity.csv"
+```
+
+On Windows, set the 3 environment keys with the command: 
+```
+export BS_API_KEY=betaSeriesAPIKey
+export CLIENT_ID=theclientID
+export CLIENT_SECRET=theclientseccret
 ```
 
 Follow the script instructions
@@ -61,8 +70,8 @@ ET VOILA!
 ```
 // example
 
-id,thetvdb_id,title,archive,episode,remaining,status,tags
-3764,250487,"American Horror Story",1,S00E00,84,0,
+id,title,archive,episode,remaining,status,tags
+3764,"American Horror Story",1,S00E00,84,0,
 ```
 
 - shows that have at least 1 episode seen will be added to your Trakt's history (the seen episodes `watched at` dates will be set to the release date, as Betaseries does not provide this information in the CSV export)
@@ -70,8 +79,8 @@ id,thetvdb_id,title,archive,episode,remaining,status,tags
 ```
 // example
 
-id,thetvdb_id,title,archive,episode,remaining,status,tags
-4189,253463,"Black Mirror",0,S02E03,13,"31,58",
+id,title,archive,episode,remaining,status,tags
+481,"Breaking Bad",1,S05E17,0,100,
 ```
 
 ### Movies
@@ -85,8 +94,8 @@ There are 3 different statuses for a movie in Betaseries
 ```
 // example
 
-id,tmdb_id,title,status
-193,19995,Avatar,1
+id,title,status,date
+86075,"Shotgun Wedding",1,2023-10-18
 13157,76757,"Jupiter : Le Destin de l'univers",2
 92,49051,"Le Hobbit : Un voyage inattendu",0
 ```
